@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( VideoCapture )
+find_package( OpenCV )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( fractals fractals.cpp )
+target_link_libraries( fractals ${OpenCV_LIBS} )

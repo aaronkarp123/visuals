@@ -1,0 +1,6 @@
+cmake_minimum_required(VERSION 2.8)
+project( videoWipe )
+find_package( OpenCV )
+include_directories( ${OpenCV_INCLUDE_DIRS} )
+add_executable( videoWipe videoWipe.cpp )
+target_link_libraries( videoWipe ${OpenCV_LIBS} )

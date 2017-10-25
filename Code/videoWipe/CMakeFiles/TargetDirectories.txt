@@ -1,0 +1,3 @@
+/Users/aaronkarp/Documents/visual/Code/videoWipe/CMakeFiles/videoWipe.dir
+/Users/aaronkarp/Documents/visual/Code/videoWipe/CMakeFiles/edit_cache.dir
+/Users/aaronkarp/Documents/visual/Code/videoWipe/CMakeFiles/rebuild_cache.dir

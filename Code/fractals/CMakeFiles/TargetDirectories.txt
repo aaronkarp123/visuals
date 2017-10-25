@@ -1,0 +1,3 @@
+/Users/aaronkarp/Documents/visual/Code/fractals/CMakeFiles/edit_cache.dir
+/Users/aaronkarp/Documents/visual/Code/fractals/CMakeFiles/rebuild_cache.dir
+/Users/aaronkarp/Documents/visual/Code/fractals/CMakeFiles/fractals.dir
