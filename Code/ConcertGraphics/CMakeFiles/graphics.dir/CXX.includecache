@@ -15,7 +15,17 @@ opencv2/highgui/highgui.hpp
 -
 opencv2/imgproc/imgproc.hpp
 -
+sys/types.h
+-
+dirent.h
+-
+errno.h
+-
 vector
+-
+string
+-
+iostream
 -
 
 /usr/local/include/opencv2/calib3d/calib3d.hpp
