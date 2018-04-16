@@ -14,6 +14,8 @@ using namespace std;
 #include <vector>
 #include <string>
 #include <iostream>
+#define CVUI_IMPLEMENTATION
+#include "cvui/cvui.h"
 
 int getdir (string dir, vector<string> &files)
 {
@@ -36,14 +38,37 @@ int getdir (string dir, vector<string> &files)
 int loadvids (vector<string> &names, vector<VideoCapture> &files, vector<int> &sizes)
 {
     for (unsigned int i = 0;i < names.size();i++) {
-        cout << names[i] << endl;
         VideoCapture cap(names[i]);
         if ( !cap.isOpened() ){
-            cout << "Cannot open the video file. \n";
+            cout << "Cannot open the video file " << names[i] <<" \n";
             return -1;
         }
         files.push_back(cap);
         sizes.push_back(cap.get(CV_CAP_PROP_FRAME_COUNT));
+        cout << names[i] << ": " << cap.get(CV_CAP_PROP_FRAME_COUNT) << " frames\n";
+    }
+    return 0;
+}
+
+int decodevids ( vector<VideoCapture> &files, cv::Size &disp_size, vector<vector<Mat> > &data)
+{
+    for (int i = 0; i < files.size(); i++)
+    {
+        Mat frame;
+        vector<Mat> vid_data;
+        int count = 0;
+        int l = files[i].get(CV_CAP_PROP_FRAME_COUNT);
+        while (true)
+        {
+            count ++;
+            if (count >= l)
+                break;
+            files[i] >> frame;
+            cv::resize(frame, frame,  disp_size);
+            vid_data.push_back(frame);
+        }
+        data.push_back(vid_data);
+        cout << "Loaded Video " << i << "\n";
     }
     return 0;
 }
@@ -83,15 +108,30 @@ int colored_outline (Mat &frame, vector<vector<Point> > &contours, vector<Vec4i>
     return 0;
 }
 
-int main(int, char**)
+int main(int argc, char** argv)
 {
+    bool preload = false;
+    for (int i = 0; i < argc; ++i)
+        if (std::strcmp(argv[i], "preload") == 0 or std::strcmp(argv[i], "pre_load") == 0 or std::strcmp(argv[i], "pre") == 0)
+            preload = true;
+    
+    
+    
+    // GUI Components
+    Mat guiframe = Mat(200, 500, CV_8UC3);
+    bool contour_bool = false;
+    bool colored_contour_bool = false;
+    
     std::string path = "videos/";
     std::vector<string> filenames;
     std::vector<VideoCapture> videos;
+    std::vector<vector<Mat> > frames;
     std::vector<int> lengths;
     int WIDTH = 800, HEIGHT = 600;
+    cv::Size disp_size = cv::Size(WIDTH, HEIGHT);
     int frame_count = 0;
-    int current_video = 2;
+    int current_video = 0;
+    Mat frame, altered;
     
     // define sub-structures
     vector<vector<Point> > contours;
@@ -100,23 +140,53 @@ int main(int, char**)
     
     getdir(path, filenames);
     loadvids(filenames, videos, lengths);
+    if(preload)
+        decodevids(videos, disp_size, frames);
     int num_videos = videos.size();
-	Mat frame;
-    Mat altered;
-	namedWindow("Original",CV_WINDOW_NORMAL);
-    namedWindow("Test",CV_WINDOW_NORMAL);
+    namedWindow("Processed",CV_WINDOW_NORMAL);
+    cvui::init("User Control");
+    
     while(true){
-        videos[current_video] >> frame;
-        frame_count ++;
-        if (frame_count >= lengths[current_video]){
-            videos[current_video].set(CV_CAP_PROP_POS_FRAMES, 0);
-            frame_count = 0;
-            continue;
+        if(preload){
+            frame = frames.at(current_video).at(frame_count);
+            frame_count ++;
+            if (frame_count >= lengths[current_video] - 1){
+                frame_count = 0;
+                continue;
+            }
         }
-        cv::resize(frame, frame, cv::Size(WIDTH, HEIGHT));
+        else{
+            videos[current_video] >> frame;
+            frame_count ++;
+            if (frame_count >= lengths[current_video]){
+                videos[current_video].set(CV_CAP_PROP_POS_FRAMES, 0);
+                frame_count = 0;
+                continue;
+            }
+            cv::resize(frame, frame,  disp_size);
+        }
         //imshow("Original", frame);
-        colored_outline(frame, contours, hierarchy, altered);
-        imshow("Test", altered);
+        if (contour_bool)
+            if (colored_contour_bool)
+                colored_outline(frame, contours, hierarchy, altered);
+            else
+                outline(frame, altered);
+        else
+            altered = frame;
+        imshow("Processed", altered);
+        
+        // GUI
+        guiframe = cv::Scalar(49, 52, 49);
+        cvui::beginRow(guiframe, 10, 20, 100, 50, 50);
+            cvui::checkbox("contours", &contour_bool);
+            cvui::checkbox("colored", &colored_contour_bool);
+            if(cvui::button(100, 30, "Next Video"))
+                current_video = (current_video + 1) % num_videos;
+        cvui::endRow();
+        cvui::update();
+        cvui::imshow("User Control", guiframe);
+        
+        
         char c=(char)waitKey(25);
         if(c==27)
             break;

@@ -1,0 +1,47 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+#Misc
+*.sdf
+*.opensdf
+*.suo
+example/build/*
+.idea
+
+#Build paths
+build
+install
+
+# "Compiled" docs folder
+/docs/_site
+
+#Save those, please
+!example/build/README.txt
+!example/build/data/*
+html

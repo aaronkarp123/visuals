@@ -6,6 +6,22 @@
 
 #IncludeRegexTransform: 
 
+/Users/aaronkarp/Documents/visuals/Code/ConcertGraphics/cvui/cvui.h
+iostream
+-
+vector
+-
+map
+-
+stdarg.h
+-
+opencv2/imgproc/imgproc.hpp
+-
+opencv2/highgui/highgui.hpp
+-
+opencv2/core/core.hpp
+-
+
 /Users/aaronkarp/Documents/visuals/Code/ConcertGraphics/graphics.cpp
 opencv2/opencv.hpp
 /Users/aaronkarp/Documents/visuals/Code/ConcertGraphics/opencv2/opencv.hpp
@@ -27,6 +43,8 @@ string
 -
 iostream
 -
+cvui/cvui.h
+/Users/aaronkarp/Documents/visuals/Code/ConcertGraphics/cvui/cvui.h
 
 /usr/local/include/opencv2/calib3d/calib3d.hpp
 opencv2/core/core.hpp
