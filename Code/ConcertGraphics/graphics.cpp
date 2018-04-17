@@ -73,23 +73,23 @@ int decodevids ( vector<VideoCapture> &files, cv::Size &disp_size, vector<vector
     return 0;
 }
 
-int outline (Mat &frame, Mat &output)
+int outline (Mat &frame, int &low, int &high, Mat &output)
 {
     cvtColor(frame, frame, COLOR_BGR2GRAY);
     cv::Mat binaryMat(frame.size(), frame.type());
     cv::threshold(frame, binaryMat, 100, 250, cv::THRESH_BINARY);
     GaussianBlur(frame, frame, Size(7,7), 0.6, 0.6);
-    Canny(frame, output, 30, 60, 3);
+    Canny(frame, output, low, high, 3);
     return 0;
 }
 
-int colored_outline (Mat &frame, vector<vector<Point> > &contours, vector<Vec4i> &hierarchy, Mat &output)
+int colored_outline (Mat &frame, vector<vector<Point> > &contours, vector<Vec4i> &hierarchy, int &low, int &high, Mat &output)
 {
     cvtColor(frame, frame, COLOR_BGR2GRAY);
     cv::Mat binaryMat(frame.size(), frame.type());
     cv::threshold(frame, binaryMat, 100, 250, cv::THRESH_BINARY);
     GaussianBlur(frame, frame, Size(7,7), 0.6, 0.6);
-    Canny(frame, frame, 30, 60, 3);
+    Canny(frame, frame, low, high, 3);
     findContours(frame, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE, Point(0,0));
     output = Mat(frame.rows, frame.cols, CV_8UC3, Scalar(0,0,0));
     int red_color = rand() % 256, blue_color = rand() % 256, green_color = rand() % 256;
@@ -108,6 +108,15 @@ int colored_outline (Mat &frame, vector<vector<Point> > &contours, vector<Vec4i>
     return 0;
 }
 
+int test_function (Mat &frame, Mat&output)
+{
+    output = frame.clone();
+    //blur( frame, output, Size( 30, 30 ), Point(-1,-1) );
+    GaussianBlur (frame, output, Size( 7, 7 ), 0, 0);
+    
+    return 0;
+}
+
 int main(int argc, char** argv)
 {
     bool preload = false;
@@ -118,9 +127,10 @@ int main(int argc, char** argv)
     
     
     // GUI Components
-    Mat guiframe = Mat(200, 500, CV_8UC3);
+    Mat guiframe = Mat(400, 500, CV_8UC3);
     bool contour_bool = false;
     bool colored_contour_bool = false;
+    bool test_bool = false;
     
     std::string path = "videos/";
     std::vector<string> filenames;
@@ -131,6 +141,8 @@ int main(int argc, char** argv)
     cv::Size disp_size = cv::Size(WIDTH, HEIGHT);
     int frame_count = 0;
     int current_video = 0;
+    int canny_low_thresh = 50, canny_high_thresh = 150;
+    std::vector<bool> videobools;
     Mat frame, altered;
     
     // define sub-structures
@@ -143,6 +155,10 @@ int main(int argc, char** argv)
     if(preload)
         decodevids(videos, disp_size, frames);
     int num_videos = videos.size();
+    for (int i = 0; i < num_videos; i++){
+        videobools.push_back(false);
+    }
+    videobools[current_video] = true;
     namedWindow("Processed",CV_WINDOW_NORMAL);
     cvui::init("User Control");
     
@@ -168,11 +184,13 @@ int main(int argc, char** argv)
         //imshow("Original", frame);
         if (contour_bool)
             if (colored_contour_bool)
-                colored_outline(frame, contours, hierarchy, altered);
+                colored_outline(frame, contours, hierarchy, canny_low_thresh, canny_high_thresh, altered);
             else
-                outline(frame, altered);
+                outline(frame, canny_low_thresh, canny_high_thresh, altered);
         else
             altered = frame;
+        if(test_bool)
+            test_function(altered, altered);
         imshow("Processed", altered);
         
         // GUI
@@ -183,6 +201,14 @@ int main(int argc, char** argv)
             if(cvui::button(100, 30, "Next Video"))
                 current_video = (current_video + 1) % num_videos;
         cvui::endRow();
+        cvui::beginColumn(guiframe, 10, 20, 100, 50, 50);
+            cvui::trackbar(guiframe, 15, 110, 165, &canny_low_thresh, 5, 150);
+            cvui::trackbar(guiframe, 15, 180, 165, &canny_high_thresh, 80, 300);
+        cvui::endColumn();
+        cvui::beginRow(guiframe, 10, 50, 100, 50, 50);
+            cvui::checkbox("test function", &test_bool);
+        cvui::endRow();
+
         cvui::update();
         cvui::imshow("User Control", guiframe);
         
